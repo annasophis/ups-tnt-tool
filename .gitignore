@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment (if inside project)
+venv/
+env/
+.venv/
+
+# Local DBs
+*.sqlite3
+*.db
+
+# Uploaded files
+uploads/
+*.csv
+
+# Logs
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+__pycache__/
+*.pyc
+.env
+*.db
+*.sqlite3
+.vscode/
+*.log
+node_modules/
+dist/
+venv/
+.idea/

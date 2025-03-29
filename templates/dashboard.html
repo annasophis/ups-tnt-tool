@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Batch Dashboard</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f4f4f4;
+            padding: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0077cc;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-right: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .start-btn { background-color: #28a745; }
+        .stop-btn { background-color: #dc3545; }
+        .export-btn { background-color: #17a2b8; }
+        .delete-btn { background-color: #6c757d; }
+        .settings-btn { background-color: #007bff; }
+
+        .action-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal button {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .notification {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: -300px; /* start off-screen */
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 9999;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: right 0.4s ease, opacity 0.4s ease;
+    opacity: 0;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Uploaded Batches</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Batch ID</th>
+                <th>Batch Date</th>
+                <th>Records</th>
+                <th>Status</th>             
+                <th>Progress</th>           
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for batch in batches %}
+            <tr>
+                <td>{{ batch.id }}</td>
+                <td>{{ batch.batch_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ batch.address_count }}</td>
+                <td id="status-{{ batch.id }}">{{ batch.status }}</td>
+                <td>
+                    <div style="background-color: #eee; border-radius: 5px; overflow: hidden;">
+                        <div id="progress-bar-{{ batch.id }}" style="background-color: #0077cc; width: {{ batch.progress }}%; height: 12px;"></div>
+                    </div>
+                    <small id="progress-text-{{ batch.id }}">{{ batch.progress }}%</small>
+                </td>
+                <td>
+                    <button class="action-btn start-btn" onclick="startBatch({{ batch.id }})">Start</button>
+                    <button class="action-btn stop-btn" onclick="stopBatch({{ batch.id }})">Stop</button>
+                    <button class="action-btn export-btn" onclick="exportBatch({{ batch.id }})">Export</button>
+                    <button class="action-btn delete-btn" onclick="deleteBatch({{ batch.id }})">Delete</button>
+                    <button class="action-btn settings-btn" onclick="openSettingsModal({{ batch.id }})">Settings</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeSettingsModal()">&times;</span>
+        <h2>Batch Settings</h2>
+        <form id="settingsForm">
+            <label for="shipDate">Ship Date:</label>
+            <input type="date" id="shipDate" name="shipDate">
+
+            <label>
+                <input type="checkbox" id="avvFlag" name="avvFlag">
+                AVV Flag (Address Validation)
+            </label>
+
+            <label for="residential">Residential Indicator:</label>
+            <select id="residential" name="residential">
+                <option value="">-- None --</option>
+                <option value="01">01 - Residential</option>
+                <option value="02">02 - Commercial</option>
+            </select>
+
+            <input type="hidden" id="batchId" name="batchId">
+            <button type="submit">Save Settings</button>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Toast Notification -->
+    <div id="toast" class="notification"></div>
+
+    <br>
+    <a href="/">← Back to Upload</a>
+
+    <script>
+function showToast(message, bgColor = "#28a745", duration = 5000) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.style.backgroundColor = bgColor;
+    toast.style.display = "block";
+
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.style.right = "20px";
+        toast.style.opacity = "1";
+    });
+
+    // Animate out after duration
+    setTimeout(() => {
+        toast.style.right = "-300px";
+        toast.style.opacity = "0";
+
+        // Fully hide it after the animation ends
+        setTimeout(() => {
+            toast.style.display = "none";
+        }, 400); // matches transition duration
+    }, duration);
+}
+
+        
+
+        function openSettingsModal(batchId) {
+            document.getElementById("settingsModal").style.display = "block";
+            document.getElementById("batchId").value = batchId;
+        }
+
+        function closeSettingsModal() {
+            document.getElementById("settingsModal").style.display = "none";
+        }
+
+        function deleteBatch(batchId) {
+            if (confirm(`Are you sure you want to delete Batch ${batchId}?`)) {
+                fetch(`/delete_batch/${batchId}`, { method: "DELETE" })
+                .then(res => {
+                    if (res.ok) {
+                        showToast(`✅ Batch ${batchId} deleted`);
+                        location.reload();
+                    } else {
+                        return res.text().then(text => { throw new Error(text); });
+                    }
+                })
+                .catch(err => {
+                    showToast("❌ Error deleting batch: " + err.message, "#dc3545");
+                });
+            }
+        }
+
+        function startBatch(batchId) {
+            fetch(`/start_batch/${batchId}`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message);
+                location.reload();
+            });
+        }
+
+        function stopBatch(batchId) {
+            fetch(`/stop_batch/${batchId}`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message);
+                location.reload();
+            });
+        }
+
+        function exportBatch(batchId) {
+            window.location.href = `/export/${batchId}`;
+        }
+
+        document.getElementById("settingsForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const batchId = document.getElementById("batchId").value;
+    const shipDate = document.getElementById("shipDate").value;
+    const avvFlag = document.getElementById("avvFlag").checked;
+    const residential = document.getElementById("residential").value;
+
+    const payload = {
+        ship_date: shipDate,
+        avv_flag: avvFlag,
+        residential_indicator: residential
+    };
+
+    fetch(`/save_settings/${batchId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        showToast(`⚙️ Settings saved for batch ${batchId}`);
+        closeSettingsModal();
+    })
+    .catch(err => {
+        showToast(`❌ Error saving settings: ${err.message}`, "#dc3545");
+    });
+});
+
+
+        function refreshBatchStatus(batchId) {
+            fetch(`/batch_status/${batchId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== undefined && data.progress !== undefined) {
+                    document.getElementById(`status-${batchId}`).innerText = data.status;
+                    document.getElementById(`progress-bar-${batchId}`).style.width = `${data.progress}%`;
+                    document.getElementById(`progress-text-${batchId}`).innerText = `${data.progress}%`;
+                }
+            });
+        }
+
+        function pollAllBatches() {
+            const batchIds = [{% for batch in batches %}{{ batch.id }},{% endfor %}];
+            batchIds.forEach(id => refreshBatchStatus(id));
+        }
+
+        setInterval(pollAllBatches, 5000);
+    </script>
+</body>
+</html>
