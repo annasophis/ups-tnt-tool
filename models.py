@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Time, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Time, Boolean, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -18,7 +18,9 @@ class BatchJob(Base):
 
 class TNTInputData(Base):
     __tablename__ = "tnt_input_data"
-
+    __table_args__ = (
+        Index("idx_tnt_input_data_batch_id", "batch_id"),
+    )
     id = Column(Integer, primary_key=True, index=True)
     batch_id = Column(Integer, ForeignKey("batch_jobs.id", ondelete="CASCADE"))
     origin_city = Column(String)
@@ -30,18 +32,22 @@ class TNTInputData(Base):
     input_dest_zip = Column(String)
     ups_dest_zip = Column(String)
     dest_country = Column(String)
-    
+
     # 🆕 Settings directly on input row
     ship_date = Column(Date, nullable=True)
     avv_flag = Column(Boolean, default=False)
     residential_indicator = Column(String, nullable=True)  # "", "01", "02"
+    
     batch = relationship("BatchJob", back_populates="addresses")
     responses = relationship("TNTAPIResponse", back_populates="input", cascade="all, delete-orphan")
+    
 
 
 class TNTAPIResponse(Base):
     __tablename__ = "tnt_response"
-
+    __table_args__ = (
+        Index("idx_tnt_response_input_id", "input_id"),
+    )
     id = Column(Integer, primary_key=True, index=True)
     service_level = Column(String)
     service_description = Column(String)

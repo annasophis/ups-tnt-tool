@@ -6,41 +6,52 @@
     <style>
         body {
             font-family: "Segoe UI", sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f2f2f5;
             padding: 40px;
+            margin: 0;
         }
-
+    
+        h1 {
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 600;
+            font-size: 24px;
+        }
+    
         table {
             width: 100%;
             border-collapse: collapse;
             background-color: #fff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
         }
-
+    
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             text-align: left;
+            font-size: 14px;
         }
-
+    
         th {
-            background-color: #0077cc;
+            background-color: #002C77;
             color: white;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
         }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
+    
         a {
-            color: #0077cc;
+            color: #002C77;
             text-decoration: none;
+            font-weight: 500;
         }
-
+    
         a:hover {
             text-decoration: underline;
         }
-
+    
         .action-btn {
             color: white;
             border: none;
@@ -49,18 +60,20 @@
             margin-right: 5px;
             cursor: pointer;
             font-size: 13px;
+            font-weight: 500;
         }
-
+    
         .start-btn { background-color: #28a745; }
         .stop-btn { background-color: #dc3545; }
         .export-btn { background-color: #17a2b8; }
         .delete-btn { background-color: #6c757d; }
         .settings-btn { background-color: #007bff; }
-
+        .logs-btn { background-color: #ffc107; }
+    
         .action-btn:hover {
             filter: brightness(1.1);
         }
-
+    
         .modal {
             display: none;
             position: fixed;
@@ -72,69 +85,172 @@
             overflow: auto;
             background-color: rgba(0,0,0,0.5);
         }
-
+    
         .modal-content {
             background-color: #fff;
             margin: 10% auto;
             padding: 20px;
-            border-radius: 8px;
-            width: 400px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-family: "Segoe UI", sans-serif;
         }
-
+    
         .close {
-            color: #aaa;
             float: right;
             font-size: 22px;
             font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: #333;
-            text-decoration: none;
+            color: #aaa;
             cursor: pointer;
         }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
+    
+        .close:hover {
+            color: #333;
         }
-
-        input[type="date"] {
+    
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: -300px;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: right 0.4s ease, opacity 0.4s ease;
+            opacity: 0;
+        }
+    
+        .modal button {
+            margin-top: 10px;
+            width: 100%;
+            background-color: #002C77;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    
+        input[type="date"],
+        select {
             width: 100%;
             padding: 8px;
             margin-bottom: 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 14px;
         }
-
-        .modal button {
-            margin-top: 10px;
-            width: 100%;
+    
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
         }
+    
+        small {
+            font-size: 12px;
+            color: #555;
+        }
+        .tooltip {
+    position: relative;
+    display: inline-block;
+}
 
-        .notification {
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 260px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    padding: 12px;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 10;
+    top: 30px;
+    right: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+/* Loader Overlay */
+#loadingOverlay {
     display: none;
     position: fixed;
-    top: 20px;
-    right: -300px; /* start off-screen */
-    background-color: #28a745;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 14px;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.75);
     z-index: 9999;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: right 0.4s ease, opacity 0.4s ease;
-    opacity: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #0077cc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+a button {
+    background-color: #002C77;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+a button:hover {
+    background-color: #001c4d;
 }
 
     </style>
+    
 </head>
 <body>
-    <h1>Uploaded Batches</h1>
+    <div style="text-align: left; margin-bottom: 30px;">
+        <img src="/static/logo.svg" alt="Purolator" style="max-width: 120px; height: auto;">
+        <h1 style="color: rgb(0, 0, 0); display: flex; justify-content: left; align-items: left; gap: 10px;">
+            Uploaded Batches
+            <div class="tooltip">
+                <span style="cursor: pointer;">❓</span>
+                <div class="tooltiptext">
+                    <strong>Dashboard Info:</strong><br>
+                    • View all uploaded batches<br>
+                    • Click <em>Start</em> to begin processing<br>
+                    • Monitor status and % progress<br>
+                    • Export results or delete batches<br>
+                    • Use <em>Logs</em> to view live API activity
+                </div>
+            </div>
+        </h1>
+    </div>
+    
     <table>
         <thead>
             <tr>
@@ -165,6 +281,9 @@
                     <button class="action-btn export-btn" onclick="exportBatch({{ batch.id }})">Export</button>
                     <button class="action-btn delete-btn" onclick="deleteBatch({{ batch.id }})">Delete</button>
                     <button class="action-btn settings-btn" onclick="openSettingsModal({{ batch.id }})">Settings</button>
+                    <button class="action-btn logs-btn" onclick="openLogsModal({{ batch.id }})">Logs</button>
+                    
+
                 </td>
             </tr>
             {% endfor %}
@@ -198,13 +317,34 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h3>Delete Batch</h3>
+        <p id="deleteModalText">Are you sure you want to delete this batch?</p>
+        <div style="text-align: right; margin-top: 20px;">
+            <button class="action-btn delete-btn" onclick="confirmDelete()">Yes, Delete</button>
+            <button class="action-btn settings-btn" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 
     <!-- Toast Notification -->
     <div id="toast" class="notification"></div>
 
     <br>
-    <a href="/">← Back to Upload</a>
+    <div style="text-align: left; margin-top: 30px;">
+        <a href="/">
+            <button type="button">← Back to Upload</button>
+        </a>
+    </div>
+    
 
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
     <script>
 function showToast(message, bgColor = "#28a745", duration = 5000) {
     const toast = document.getElementById("toast");
@@ -241,31 +381,25 @@ function showToast(message, bgColor = "#28a745", duration = 5000) {
             document.getElementById("settingsModal").style.display = "none";
         }
 
-        function deleteBatch(batchId) {
-            if (confirm(`Are you sure you want to delete Batch ${batchId}?`)) {
-                fetch(`/delete_batch/${batchId}`, { method: "DELETE" })
-                .then(res => {
-                    if (res.ok) {
-                        showToast(`✅ Batch ${batchId} deleted`);
-                        location.reload();
-                    } else {
-                        return res.text().then(text => { throw new Error(text); });
-                    }
-                })
-                .catch(err => {
-                    showToast("❌ Error deleting batch: " + err.message, "#dc3545");
-                });
-            }
-        }
+
+
 
         function startBatch(batchId) {
-            fetch(`/start_batch/${batchId}`, { method: "POST" })
-            .then(res => res.json())
-            .then(data => {
-                showToast(data.message);
-                location.reload();
-            });
-        }
+    showToast(`🚀 Starting batch ${batchId}...`, "#0077cc");
+
+    fetch(`/start_batch/${batchId}`, { method: "POST" })
+    .then(res => res.json())
+    .then(data => {
+        showToast(`✅ ${data.message}`);
+        setTimeout(() => {
+            location.reload();
+        }, 1500);
+    })
+    .catch(err => {
+        showToast("❌ Error starting batch: " + err.message, "#dc3545");
+    });
+}
+
 
         function stopBatch(batchId) {
             fetch(`/stop_batch/${batchId}`, { method: "POST" })
@@ -309,24 +443,132 @@ function showToast(message, bgColor = "#28a745", duration = 5000) {
 });
 
 
-        function refreshBatchStatus(batchId) {
-            fetch(`/batch_status/${batchId}`)
+function refreshBatchStatus(batchId) {
+    fetch(`/batch_status/${batchId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== undefined && data.progress !== undefined) {
+                document.getElementById(`status-${batchId}`).innerText = data.status;
+                document.getElementById(`progress-bar-${batchId}`).style.width = `${data.progress}%`;
+                document.getElementById(`progress-text-${batchId}`).innerText = `${data.progress}%`;
+            }
+        });
+}
+
+function pollAllBatches() {
+    const batchIds = [{% for batch in batches %}{{ batch.id }},{% endfor %}];
+    batchIds.forEach(id => refreshBatchStatus(id));
+}
+
+setInterval(pollAllBatches, 5000);
+    </script>
+
+    <!-- Logs Modal -->
+<div id="logsModal" class="modal">
+    <div class="modal-content" style="height: 500px; overflow-y: auto;">
+        <span class="close" onclick="closeLogsModal()">&times;</span>
+        <h2>Batch API Logs</h2>
+        <div id="logContent" style="font-family: monospace; white-space: pre-wrap;"></div>
+    </div>
+</div>
+<script>
+    let logRefreshInterval = null;
+
+function openLogsModal(batchId) {
+    const modal = document.getElementById("logsModal");
+    const logContent = document.getElementById("logContent");
+
+    modal.style.display = "block";
+    logContent.innerText = "Loading logs...";
+
+    const fetchLogs = () => {
+        fetch(`/logs/${batchId}`)
             .then(res => res.json())
             .then(data => {
-                if (data.status !== undefined && data.progress !== undefined) {
-                    document.getElementById(`status-${batchId}`).innerText = data.status;
-                    document.getElementById(`progress-bar-${batchId}`).style.width = `${data.progress}%`;
-                    document.getElementById(`progress-text-${batchId}`).innerText = `${data.progress}%`;
-                }
+                const reversedLogs = data.logs.slice().reverse(); // show newest first
+                logContent.innerText = reversedLogs.join("\n");
+            })
+            .catch(err => {
+                logContent.innerText = "❌ Failed to load logs: " + err.message;
             });
-        }
+    };
 
-        function pollAllBatches() {
-            const batchIds = [{% for batch in batches %}{{ batch.id }},{% endfor %}];
-            batchIds.forEach(id => refreshBatchStatus(id));
-        }
+    fetchLogs(); // fetch once immediately
+    logRefreshInterval = setInterval(fetchLogs, 3000); // auto-refresh every 3s
+}
 
-        setInterval(pollAllBatches, 5000);
+function closeLogsModal() {
+    document.getElementById("logsModal").style.display = "none";
+    if (logRefreshInterval) {
+        clearInterval(logRefreshInterval);
+        logRefreshInterval = null;
+    }
+}
+
+function getQueryParam(key) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(key);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    const uploaded = getQueryParam("uploaded");
+    if (uploaded === "true") {
+        showToast("✅ Batch uploaded successfully");
+        // Optionally remove the query param to avoid duplicate toast on reload
+        history.replaceState(null, "", window.location.pathname);
+    }
+});
+
+
+let deleteTargetBatchId = null;
+
+function deleteBatch(batchId) {
+    deleteTargetBatchId = batchId;
+    document.getElementById("deleteModalText").innerText =
+        `Are you sure you want to delete Batch ${batchId}?`;
+    document.getElementById("deleteConfirmModal").style.display = "block";
+}
+
+function closeDeleteModal() {
+    document.getElementById("deleteConfirmModal").style.display = "none";
+    deleteTargetBatchId = null;
+}
+
+function confirmDelete() {
+    if (!deleteTargetBatchId) return;
+
+    // Close modal right away
+    document.getElementById("deleteConfirmModal").style.display = "none";
+
+    // Show spinner
+    document.getElementById("loadingOverlay").style.display = "flex";
+
+    showToast(`🔄 Deleting batch ${deleteTargetBatchId}, please wait... this may take a minute`, "#0077cc");
+
+
+    fetch(`/delete_batch/${deleteTargetBatchId}`, { method: "DELETE" })
+        .then(res => {
+            if (res.ok) {
+                showToast(`✅ Batch ${deleteTargetBatchId} deleted`);
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                return res.text().then(text => { throw new Error(text); });
+            }
+        })
+        .catch(err => {
+            showToast("❌ Error deleting batch: " + err.message, "#dc3545");
+        })
+        .finally(() => {
+            // Always hide loader and reset
+            document.getElementById("loadingOverlay").style.display = "none";
+            deleteTargetBatchId = null;
+        });
+}
+
+
     </script>
+    
 </body>
 </html>
