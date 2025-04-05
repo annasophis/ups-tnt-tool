@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # SQLAlchemy
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -351,3 +351,20 @@ def stop_batch(batch_id: int):
 @app.get("/logs/{batch_id}")
 def get_logs(batch_id: int):
     return {"logs": batch_logs.get(batch_id, ["No logs available."])}
+
+
+
+
+@app.post("/optimize_db")
+async def optimize_db():
+    # Optional: Check for running batches using a session
+    with SessionLocal() as session:
+        running = session.query(BatchJob).filter(BatchJob.status == "Started").count()
+        if running > 0:
+            raise HTTPException(status_code=400, detail="Cannot optimize while batches are running.")
+
+    # Run VACUUM FULL in autocommit mode using a raw engine connection
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        conn.execute(text("VACUUM"))
+
+    return {"message": "Database optimized successfully."}

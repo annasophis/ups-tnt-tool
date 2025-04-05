@@ -229,13 +229,91 @@ a button:hover {
     background-color: #001c4d;
 }
 
+.optimize-btn {
+    background-color: #6f42c1; /* a nice purple tone */
+    color: white;
+}
+
+.optimize-btn:hover {
+    background-color: #5936a8;
+}
+
+.switch {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0077cc;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode table {
+  background-color: #1e1e1e;
+}
+
+body.dark-mode th {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark-mode .container {
+  background-color: #1a1a1a;
+}
+body.dark-mode h1 {
+    color: #fff;
+}
+
+
+
     </style>
     
 </head>
 <body>
+    
     <div style="text-align: left; margin-bottom: 30px;">
         <img src="/static/logo.svg" alt="Purolator" style="max-width: 120px; height: auto;">
-        <h1 style="color: rgb(0, 0, 0); display: flex; justify-content: left; align-items: left; gap: 10px;">
+        <h1 style="display: flex; justify-content: left; align-items: left; gap: 10px;">
             Uploaded Batches
             <div class="tooltip">
                 <span style="cursor: pointer;">❓</span>
@@ -250,7 +328,15 @@ a button:hover {
             </div>
         </h1>
     </div>
-    
+    <div style="position: fixed; top: 20px; right: 90px; font-size: 14px; font-weight: 500;">
+        Dark Mode
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="slider round"></span>
+      </label>
+      
+      
     <table>
         <thead>
             <tr>
@@ -282,7 +368,8 @@ a button:hover {
                     <button class="action-btn delete-btn" onclick="deleteBatch({{ batch.id }})">Delete</button>
                     <button class="action-btn settings-btn" onclick="openSettingsModal({{ batch.id }})">Settings</button>
                     <button class="action-btn logs-btn" onclick="openLogsModal({{ batch.id }})">Logs</button>
-                    
+                    <button class="action-btn optimize-btn" onclick="optimizeDatabase()">Optimize DB</button>
+
 
                 </td>
             </tr>
@@ -411,8 +498,12 @@ function showToast(message, bgColor = "#28a745", duration = 5000) {
         }
 
         function exportBatch(batchId) {
-            window.location.href = `/export/${batchId}`;
-        }
+    showToast("📦 Preparing your file for download...", "#0077cc");
+    setTimeout(() => {
+        window.location.href = `/export/${batchId}`;
+    }, 800); // slight delay so toast shows before the download starts
+}
+
 
         document.getElementById("settingsForm").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -461,6 +552,18 @@ function pollAllBatches() {
 }
 
 setInterval(pollAllBatches, 5000);
+
+function optimizeDatabase() {
+    fetch('/optimize_db', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            showToast(`✨ ${data.message}`, "#6f42c1");
+        })
+        .catch(err => {
+            showToast(`❌ Optimization failed: ${err.message}`, "#dc3545");
+        });
+}
+
     </script>
 
     <!-- Logs Modal -->
@@ -566,6 +669,24 @@ function confirmDelete() {
             deleteTargetBatchId = null;
         });
 }
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("themeToggle");
+
+  // Remember the preference
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    toggle.checked = true;
+  }
+
+  toggle.addEventListener("change", () => {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("theme", toggle.checked ? "dark" : "light");
+  });
+});
+
 
 
     </script>
