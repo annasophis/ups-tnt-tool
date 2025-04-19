@@ -1,30 +1,24 @@
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-import sys
 import os
-
-# Add root path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from models import Base  # ✅ Use this import instead of upstnt_app.models
-
-
-# Add project root to path so imports work
-
+from alembic import context
+from sqlalchemy import engine_from_config, pool
+from models import Base
 
 config = context.config
 
-# ✅ Inject the live DATABASE_URL from env
-#config.set_main_option("sqlalchemy.url", os.environ.get("DATABASE_URL"))
-config.set_main_option("sqlalchemy.url", os.environ.get("DATABASE_URL", ""))
+# 🔥 Inject DATABASE_URL from environment
+db_url = os.environ.get("DATABASE_URL")
+if not db_url:
+    raise Exception("DATABASE_URL environment variable not set")
 
+config.set_main_option("sqlalchemy.url", db_url)
 
-# Set up logging
+# Optional logging
+from logging.config import fileConfig
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
