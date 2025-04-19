@@ -87,3 +87,27 @@ class BatchSettings(Base):
     residential_indicator = Column(String, nullable=True)  # "", "01", or "02"
 
     batch = relationship("BatchJob", back_populates="settings")
+
+class FedExAPIResponse(Base):
+    __tablename__ = "fedex_response"
+    __table_args__ = (
+        Index("idx_fedex_response_input_id", "input_id"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    input_id = Column(Integer, ForeignKey("tnt_input_data.id", ondelete="CASCADE"))
+    
+    service_type = Column(String)
+    service_name = Column(String)
+    packaging_type = Column(String)
+    commit_day_of_week = Column(String)
+    commit_date = Column(Date)
+    transit_time = Column(String)
+    saturday_delivery = Column(Boolean)
+    service_code = Column(String)
+    service_description = Column(String)
+
+    delivery_date = Column(Date, nullable=True)
+    delivery_time = Column(Time, nullable=True)
+
+    input = relationship("TNTInputData")
