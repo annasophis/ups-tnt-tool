@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://bruno@localhost/local_api_db")
+#SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://bruno@localhost/local_api_db")
+#postgresql://postgres:EIiWAuaHJKjVLOszMLPgElkvSQeRwSDM@mainline.proxy.rlwy.net:31675/railway
 
-
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:EIiWAuaHJKjVLOszMLPgElkvSQeRwSDM@mainline.proxy.rlwy.net:31675/railway")
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     pool_size=20,            # default is 5
